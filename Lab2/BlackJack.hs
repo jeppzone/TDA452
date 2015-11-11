@@ -37,8 +37,8 @@ valueCard (Card rank suit) = valueRank rank
 
 numberOfAces :: Hand -> Integer
 numberOfAces Empty = 0
-numberOfAces (Add (Card rank suit) hand ) | rank == Ace = 1 + numberOfAces hand
-										  | otherwise   =  numberOfAces hand
+numberOfAces (Add (Card r s) hand ) | r == Ace  = 1 + numberOfAces hand
+									| otherwise =  numberOfAces hand
 
 -- Helper functions for calculating the highest 
 -- and lowest possible values of a hand
@@ -55,7 +55,7 @@ valueLow hand =  (valueHigh hand) - (numberOfAces hand) * 10
 value :: Hand -> Integer
 value Empty = 0
 value (Add card hand) | valueHigh (Add card hand) > 21 = valueLow(Add card hand)
-					  | otherwise					   = valueHigh(Add card hand)
+					  | otherwise = valueHigh(Add card hand)
 
 -- Returns true if the game is over, false otherwise
 
@@ -65,7 +65,7 @@ gameOver hand = (value hand) > 21
 -- Returns the winner of the round
 
 winner :: Hand -> Hand -> Player
-winner guest bank | gameOver guest 						= Bank
-				  | gameOver bank 						= Guest
-				  | value bank >= value guest 			= Bank
-				  | otherwise							= Guest
+winner guest bank | gameOver guest = Bank
+				  | gameOver bank  = Guest
+				  | value bank >= value guest = Bank
+				  | otherwise = Guest
