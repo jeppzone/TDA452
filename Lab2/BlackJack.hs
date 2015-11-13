@@ -23,21 +23,20 @@ empty = Empty
 -- Returns the value of the rank
 
 valueRank :: Rank -> Integer
-valueRank (Numeric n) 		   = n
-valueRank r | r == Ace 		   = 11
-			      | otherwise 	   = 10
+valueRank (Numeric n) = n
+valueRank Ace         = 11
+valueRank _ 	        = 10
 
 -- Returns the value of the card
 
 valueCard :: Card -> Integer
 valueCard c = valueRank (rank c)
-
 -- Returns the number of aces in a hand
 
 numberOfAces :: Hand -> Integer
 numberOfAces Empty = 0
-numberOfAces (Add (Card r s) hand) | r == Ace  = 1 + numberOfAces hand
-                                   | otherwise = numberOfAces hand
+numberOfAces (Add (Card Ace s) hand) = 1 + numberOfAces hand
+numberOfAces (Add _ hand)            = numberOfAces hand
 
 -- Returns the value of a hand using blackjack rules.
 
