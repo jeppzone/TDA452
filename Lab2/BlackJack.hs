@@ -37,7 +37,7 @@ valueCard c = valueRank (rank c)
 numberOfAces :: Hand -> Integer
 numberOfAces Empty = 0
 numberOfAces (Add (Card r s) hand) | r == Ace  = 1 + numberOfAces hand
-								   | otherwise = numberOfAces hand
+								                   | otherwise = numberOfAces hand
 
 -- Returns the value of a hand using blackjack rules.
 
