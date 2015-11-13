@@ -37,16 +37,16 @@ valueCard c = valueRank (rank c)
 numberOfAces :: Hand -> Integer
 numberOfAces Empty = 0
 numberOfAces (Add (Card r s) hand) | r == Ace  = 1 + numberOfAces hand
-								                   | otherwise = numberOfAces hand
+                                   | otherwise = numberOfAces hand
 
 -- Returns the value of a hand using blackjack rules.
 
 value :: Hand -> Integer
 value (Add c h) | value2 (Add c h) <= 21 = valueCard c + value h
-				| otherwise = value2 (Add c h) - (numberOfAces h)*10
-				where
-					value2 Empty = 0
-					value2 (Add c h) = valueCard c + value2 h
+                | otherwise = value2 (Add c h) - (numberOfAces h)*10
+              where
+                  value2 Empty = 0
+                  value2 (Add c h) = valueCard c + value2 h
 
 -- Returns true if the game is over, false otherwise
 
@@ -57,6 +57,6 @@ gameOver hand = value hand > 21
 
 winner :: Hand -> Hand -> Player
 winner ph bh | (gameOver ph) = Bank
-			 | (gameOver bh) = Guest
-			 | value ph > value bh = Guest
- 			 | value ph <= value bh = Bank
+             | (gameOver bh) = Guest
+             | value ph > value bh = Guest
+             | value ph <= value bh = Bank
