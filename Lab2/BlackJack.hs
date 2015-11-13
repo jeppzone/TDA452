@@ -44,9 +44,9 @@ numberOfAces (Add (Card r s) hand) | r == Ace  = 1 + numberOfAces hand
 value :: Hand -> Integer
 value (Add c h) | value2 (Add c h) <= 21 = valueCard c + value h
                 | otherwise = value2 (Add c h) - (numberOfAces h)*10
-              where
-                  value2 Empty = 0
-                  value2 (Add c h) = valueCard c + value2 h
+                  where
+                       value2 Empty = 0
+                       value2 (Add c h) = valueCard c + value2 h
 
 -- Returns true if the game is over, false otherwise
 
