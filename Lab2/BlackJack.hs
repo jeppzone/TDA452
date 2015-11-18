@@ -37,7 +37,7 @@ valueCard c = valueRank (rank c)
 
 numberOfAces :: Hand -> Integer
 numberOfAces Empty = 0
-numberOfAces (Add (Card Ace s) hand) = 1 + numberOfAces hand
+numberOfAces (Add (Card Ace _) hand) = 1 + numberOfAces hand
 numberOfAces (Add _ hand) = numberOfAces hand
 
 -- Returns the value of a hand using blackjack rules.
@@ -76,15 +76,15 @@ prop_onTopOf_assoc h1 h2 h3 = h1 <+(h2 <+ h3) == (h1 <+ h2) <+ h3
 -- Property to check if the size is preserved after using the <+ operator
 
 prop_size_onTopOf :: Hand -> Hand -> Bool
-prop_size_onTopOf h1 h2 = (size h1) + (size h2) == size(h1 <+ h2)
+prop_size_onTopOf h1 h2 = (size h1) + (size h2) == size (h1 <+ h2)
 
 -- Returns a hand consisting of all cards of the given suit
 
 fullSuit :: Suit -> Hand
 fullSuit s = (Add (Card Ace s) (Add (Card King s) (Add (Card Queen s) 
-	           (Add (Card Jack s)(Add (Card (Numeric 10) s) (Add (Card (Numeric 9) s) 
-	           (Add (Card (Numeric 8 ) s)(Add (Card (Numeric 7) s) 
-	           (Add (Card (Numeric 6 ) s) (Add (Card (Numeric 5) s) 
+             (Add (Card Jack s)(Add (Card (Numeric 10) s) (Add (Card (Numeric 9) s) 
+             (Add (Card (Numeric 8 ) s)(Add (Card (Numeric 7) s) 
+             (Add (Card (Numeric 6 ) s) (Add (Card (Numeric 5) s) 
              (Add (Card (Numeric 4 ) s) (Add (Card (Numeric 3) s) 
              (Add (Card (Numeric 2 ) s) Empty )))))))))))))
 
