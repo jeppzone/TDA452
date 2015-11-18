@@ -101,16 +101,18 @@ draw Empty _ = error ("draw: The deck is empty")
 draw (Add card deck) hand = (deck, (Add card hand))
 
 -- Plays a bank hand
+
 playBank :: Hand -> Hand
 playBank deck = playBank' deck Empty
 
 -- Helper function for playing a bank hand
+
 playBank' :: Hand -> Hand -> Hand
 playBank' deck hand | value hand >= 16 = hand
-                    | otherwise        = uncurry playBank' play
-  where play = draw deck hand
+                    | otherwise        = uncurry playBank' newCard
+  where newCard = draw deck hand
 
--- Shuffles a hand of cards using a random number generator
+-- Shuffles a hand of cards randomly
 
 shuffle :: StdGen -> Hand -> Hand
 shuffle _ Empty = Empty
@@ -162,5 +164,4 @@ implementation = Interface{
 
 main :: IO()
 main = runGame implementation
-
 
