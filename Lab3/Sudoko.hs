@@ -21,9 +21,9 @@ isSudoku s = length (rows s) == 9 && all correctRow (rows s)
 
 -- Checks if a single row is a valid soduko row
 correctRow :: [Maybe Int] -> Bool
-correctRow r = all (\x -> case x of
+correctRow r = all (\c -> case c of
                         Nothing -> True
-                        Just x -> x `elem` [1..9]) r
+                        Just c -> c `elem` [1..9]) r
 
 -- isSolved sud checks if sud is already solved, i.e. there are no blanks
 isSolved :: Sudoku -> Bool
