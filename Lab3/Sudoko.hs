@@ -53,13 +53,17 @@ readSudoku fp = do
                   let sudoku = parseSudoko file
                   if isSudoku sudoku
                     then return sudoku
-                    else error "Not a valid sudoku in file"
+                  else error "Not a valid sudoku in file"
+
+-- Helper function for parsing a sudoku                     
 parseSudoko :: String -> Sudoku
 parseSudoko s = Sudoku (map parseRow (lines s))
 
+-- Helper function for parsing a row
 parseRow :: String -> [Maybe Int]
 parseRow = map parseCell
 
+-- Helper function for parsing a cell
 parseCell :: Char -> Maybe Int
 parseCell c | c == '.' = Nothing
             | otherwise = Just (ord c)
