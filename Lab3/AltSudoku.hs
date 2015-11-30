@@ -134,3 +134,5 @@ blocks sudo = do
 
 isOkay :: Sudoku -> Bool
 isOkay sudo = all isOkayBlock (blocks sudo)
+
+--Test
