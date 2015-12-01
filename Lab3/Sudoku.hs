@@ -28,7 +28,7 @@ correctRow r = all (\c -> case c of
 -- isSolved sud checks if sud is already solved, i.e. there are no blanks
 isSolved :: Sudoku -> Bool
 isSolved s = isSudoku s && all isRowSolved (rows s)
-  where 
+  where
     isRowSolved = all $ not . isNothing
 
 
@@ -55,7 +55,7 @@ readSudoku fp = do
                     then return sudoku
                   else error "Not a valid sudoku in file"
 
--- Helper function for parsing a sudoku                     
+-- Helper function for parsing a sudoku
 parseSudoku :: String -> Sudoku
 parseSudoku s = Sudoku (map parseRow (lines s))
 
@@ -107,7 +107,7 @@ rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
 
 -- Helper function that returns a list of blocks when given three rows
 colHelper :: [[Maybe Int]] -> [[Maybe Int]]
-colHelper (a:b:c:ds) 
+colHelper (a:b:c:ds)
   | null a = []
   | otherwise = ((take 3 a) ++ (take 3 b) ++ (take 3 c)) :
                 colHelper ((drop 3 a) : (drop 3 b) : (drop 3 c) : ds)

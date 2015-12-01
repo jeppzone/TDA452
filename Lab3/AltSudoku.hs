@@ -123,24 +123,24 @@ countNothing :: [Maybe Int] -> Int
 countNothing arr = count [x == Nothing | x <- arr]
     where count list = sum $ map fromEnum list
 
-    -- Returns the rows, columns and blocks given a sudoku
-    blocks :: Sudoku -> [Block]
-    blocks s = rows' ++ columns' ++ blocks'
-      where rows' = rows s
-            columns' = transpose rows'
-            blocks' = rowHelper rows'
+-- Returns the rows, columns and blocks given a sudoku
+blocks :: Sudoku -> [Block]
+blocks s = rows' ++ columns' ++ blocks'
+  where rows' = rows s
+        columns' = transpose rows'
+        blocks' = rowHelper rows'
 
-    -- Helper function for traversing the rows three at a time
-    rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
-    rowHelper [] = []
-    rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
+-- Helper function for traversing the rows three at a time
+rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
+rowHelper [] = []
+rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
 
-    -- Helper function that returns a list of blocks when given three rows
-    colHelper :: [[Maybe Int]] -> [[Maybe Int]]
-    colHelper (a:b:c:ds)
-      | null a = []
-      | otherwise = ((take 3 a) ++ (take 3 b) ++ (take 3 c)) :
-                    colHelper ((drop 3 a) : (drop 3 b) : (drop 3 c) : ds)
+-- Helper function that returns a list of blocks when given three rows
+colHelper :: [[Maybe Int]] -> [[Maybe Int]]
+colHelper (a:b:c:ds)
+  | null a = []
+  | otherwise = ((take 3 a) ++ (take 3 b) ++ (take 3 c)) :
+                colHelper ((drop 3 a) : (drop 3 b) : (drop 3 c) : ds)
 
 
 
@@ -152,3 +152,25 @@ isOkay sudo = all isOkayBlock (blocks sudo)
 prop_blocks :: Sudoku -> Bool
 prop_blocks s = length blocks' == 27 && all (\b -> length b == 9) blocks'
   where blocks' = blocks s
+
+
+-------------------------------------------------------------------
+
+type Pos = (Int,Int)
+
+blanks :: Sudoku -> [Pos]
+blanks s = ((concat (map (\(x,y) -> replicate y x)tuples)) `zip`
+    (concat [Nothing `elemIndices` x | x <- (rows s)]))
+    where tuples = [0..8] `zip` [countNothing y | y <- (rows s)]
+
+
+(!!=) :: [a] -> (Int, a) -> [a]
+(xs) !!= (n, x) | n < (length xs) = (take (n) xs) ++ [x] ++ (drop (n+1) xs)
+                | otherwise       = error ("list: index out of bounds")
+
+update :: Sudoku -> Pos -> Maybe Int -> Sudoku
+update sudoku (x, y) n = Sudoku $ upperRows ++ updatedRow:lowerRows
+    where
+        upperRows = (take x (rows sudoku))
+        updatedRow = (((rows sudoku)!! x) !!= (y, n))
+        lowerRows = (drop (x+1) (rows sudoku))
