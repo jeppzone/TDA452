@@ -10,16 +10,16 @@ data Sudoku = Sudoku { rows :: [[Maybe Int]] }
 example :: Sudoku
 example =
         Sudoku
-          [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-          , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
-          , [Nothing,Nothing,Just 9, Just 2, Nothing,Just 4, Just 7, Nothing,Nothing]
-          , [Nothing,Nothing,Nothing,Nothing,Just 1, Just 3, Nothing,Just 2, Just 8]
-          , [Just 4, Nothing,Nothing,Just 5, Nothing,Just 2, Nothing,Nothing,Just 9]
-          , [Just 2, Just 7, Nothing,Just 4, Just 6, Nothing,Nothing,Nothing,Nothing]
-          , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
-          , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
-          , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
-          ]
+        [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
+    , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
+    , [Nothing,Nothing,Just 9, Just 2, Nothing,Just 4, Just 7, Nothing,Nothing]
+    , [Nothing,Nothing,Nothing,Nothing,Just 1, Just 3, Nothing,Just 2, Just 8]
+    , [Just 4, Nothing,Nothing,Just 5, Nothing,Just 2, Nothing,Nothing,Just 9]
+    , [Just 2, Just 7, Nothing,Just 4, Just 6, Nothing,Nothing,Nothing,Nothing]
+    , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
+    , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
+    , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
+    ]
 example2 :: Sudoku
 example2 =
          Sudoku
@@ -164,9 +164,15 @@ blanks s = ((concat (map (\(x,y) -> replicate y x)tuples)) `zip`
     where tuples = [0..8] `zip` [countNothing y | y <- (rows s)]
 
 
+prop_blanks :: Sudoku -> Bool
+prop_blanks sud = and[(rows sud !! x !! y) == Nothing | (x,y) <- blanks sud]
+
+
 (!!=) :: [a] -> (Int, a) -> [a]
 (xs) !!= (n, x) | n < (length xs) = (take (n) xs) ++ [x] ++ (drop (n+1) xs)
                 | otherwise       = error ("list: index out of bounds")
+
+ -- (xs) prop_!!= (n, x) =  
 
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
 update sudoku (x, y) n = Sudoku $ upperRows ++ updatedRow:lowerRows
@@ -174,3 +180,18 @@ update sudoku (x, y) n = Sudoku $ upperRows ++ updatedRow:lowerRows
         upperRows = (take x (rows sudoku))
         updatedRow = (((rows sudoku)!! x) !!= (y, n))
         lowerRows = (drop (x+1) (rows sudoku))
+
+-- prop_update
+
+candidates :: Sudoku -> Pos -> [Int]
+candidates sudoku (x, y) = map (+1) (True `elemIndices`[isOkay (update sudoku (x,y) (Just n)) | n <- [1..9]])
+
+-- prop_candidates
+
+solve :: Sudoku -> Maybe Sudoku
+solve sud | not $ isOkay sud = Nothing
+          |                  = solve' sud
+
+solve' :: Sudoku -> Maybe Sudoku
+solve' sud | isSolved sud = Just sud
+solve' sud
