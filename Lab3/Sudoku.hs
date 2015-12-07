@@ -125,28 +125,33 @@ type Pos = (Int, Int)
 
 -- Function for returning all blank positions in the sudoku
 blanks :: Sudoku -> [Pos]
-blanks s = concat [blankFinder (r !! index) index | index <- [0..8]]
-  where r = rows s
-
--- Helper function that finds all blank positions in a sudoku
-blankFinder :: [Maybe Int] -> Int -> [Pos]
-blankFinder row index = zip rows indexes
+blanks s = [pos | pos <- allPositions, isNothing (positionValue s pos)]
   where 
-    indexes = elemIndices Nothing row
-    rows = replicate 9 index
+    r = rows s
+
+-- Function that returns a list of all possible positions in a 9x9 sudoku
+-- Used in both blanks and nonBlanks functions
+allPositions :: [Pos]
+allPositions = [(x, y) | x <- [0..8], y <- [0..8]]
+
+-- Function that returns the value of the given position in the given sudoku
+positionValue :: Sudoku -> Pos -> Maybe Int
+positionValue s (x, y) = r !! x !! y
+  where
+    r = rows s
 
 -- Property to check that all positions returned actually are blank
 prop_blanks :: Sudoku -> Bool
-prop_blanks s = all (\e -> isNothing (r !! (fst e) !! snd e)) blanks'
+prop_blanks s = all (\p -> isNothing $ positionValue s p) blanks'
   where
     blanks' = blanks s
     r = rows s
 
 -- Operator that updates an element in a list given an index and a new value
 (!!=) :: [a] -> (Int, a) -> [a]
-(!!=) l (index, v) | (length l - 1) == index = fst (splitAt index l) ++ [v]
-                   | otherwise = (fst divided) ++ [v] ++ (tail $ snd divided)
-  where divided = splitAt index l
+(!!=) l (index, v) | (length l - 1) == index = take index l ++ [v]
+                   | otherwise = first ++ [v] ++ (tail $ second)
+  where (first, second) = splitAt index l
 
 -- Property to check that the !!= operator behaves in a correct way,
 -- replacing the correct indexed element, not changing the length of the list
@@ -163,20 +168,16 @@ prop_replace l (index, v) = length l > 0 &&
 
 -- Function that given a sudoku, a position and a new value updates the sudoku accordingly
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
-update s p v = Sudoku (r !!= (rowIndex, r !! rowIndex !!= (colIndex, v)))
+update s (row, col) v = Sudoku (r !!= (row, r !! row !!= (col, v)))
   where
     r = rows s
-    rowIndex = fst p 
-    colIndex = snd p
 
--- Property to check that the updated sudoku actually is a valid sudoku
+-- Property to check that the updated value is correct
 prop_update :: Sudoku -> Pos -> Maybe Int -> Bool
-prop_update s p v = v == (r !! rowIndex !! colIndex)
+prop_update s (row, col) v = v == positionValue newSud p'
   where
-    r = rows (update s p' v)
-    p' = (abs((fst p) `mod` 9), abs((snd p) `mod` 9))
-    rowIndex = fst p'
-    colIndex = snd p'
+    newSud = update s p' v
+    p' = (abs(row `mod` 9), abs(col `mod` 9))
 
 -- Function that given a sudoku and a blank position,
 -- returns all the possible values that can be put in that position
@@ -195,14 +196,12 @@ candidateHelper (r, c) = (r * 3) + (c + 1)
 -- Property for checking that the inserting the candidates doesn't 
 -- make the sudoku invalid
 prop_candidates :: Sudoku -> Property
-prop_candidates s = isSudoku s && isOkay s ==> isSudoku newSud && isOkay newSud
-  where 
-    newSud = update s aBlank aCandidate 
-    aCandidate = Just (head $ candidates s aBlank)
-    aBlank = head $ blanks s
-
+prop_candidates s = isSudoku s && isOkay s ==> 
+                    all(\sud -> isSudoku sud && isOkay sud) allSuds
+  where
+    allSuds  = concat [allSudsOneBlank b | b <- blanks s]
+    allSudsOneBlank aBlank = [update s aBlank (Just c) | c <- candidates s aBlank]
 ------------------------------------------ Part F ------------------------------------
-
 -- Function that given a Sudoku, tries to solve it.
 -- If no solution is found, or the sudoku is invalid the result is Nothing
 solve :: Sudoku -> Maybe Sudoku
@@ -220,13 +219,12 @@ solve' s (p:ps) = solveOne s p cs
 
 -- Helper function for solving one particular cell
 solveOne :: Sudoku -> Pos -> [Int] -> Maybe Sudoku
-solveOne s p cs | length cs == 0           = Nothing
-                | isOkay s' && isSolved s' = Just s'
-                | isNothing s''            = solveOne s p (tail cs)
-                | otherwise                = s''
+solveOne s p (c:cs) | isNothing s''  = solveOne s p cs
+                    | otherwise      = s''
   where 
-    s'  = update s p (Just (head cs))
+    s'  = update s p (Just c)
     s'' = solve s'
+solveOne _ _ _                       = Nothing
 
 -- Function that reads a sudoku from a file and tries to solve it
 readAndSolve :: FilePath -> IO()
@@ -237,27 +235,19 @@ readAndSolve fp = do
                       then error "No solution found"
                       else printSudoku (fromJust solved)
 
--- Function that returns all positions and the value of that position
--- in a sudoku that are not blank
+-- Function that genereates all non blank cells in a sudoku
 nonBlanks :: Sudoku -> [(Pos, Maybe Int)]
-nonBlanks s = concat [nonBlankHelper (r !! i) i | i <- [0..8]]
-  where r = rows s
-
--- Helper function for finding all non blank positions and values
-nonBlankHelper :: [Maybe Int] -> Int -> [(Pos, Maybe Int)]
-nonBlankHelper row index = zip (zip rows indexes) c
+nonBlanks s = [(pos, (positionValue s pos)) | pos <- allPositions, isJust (positionValue s pos)]
   where
-    indexes = findIndices (isJust) row
-    rows = replicate 9 index
-    c = [row !! index | index <- indexes]
+    r = rows s
 
 -- Function that given a position and a value, checks if
 -- the value in that cell is equal to the given value
 hasValueCell :: Sudoku -> (Pos, Maybe Int) -> Bool
-hasValueCell s ((r, c) , v ) = cellValue == v
+hasValueCell s (p, v)  = cellValue == v
   where
     rs = rows s
-    cellValue = (rs !! r) !! c
+    cellValue = positionValue s p
 
 -- Function that given two sudokus checks if the first sudoku is valid and solved,
 -- and checks if the first solution for the first is also a solution for the second.   
@@ -273,4 +263,4 @@ prop_SolveSound s = isJust solved ==>
   where solved = solve s
 
 -- Making quickCheck accept after maxSucess number of successful tests
-fewerChecks prop = quickCheckWith stdArgs{ maxSuccess = 10 } prop
+fewerChecks prop = quickCheckWith stdArgs{ maxSuccess = 5 } prop
