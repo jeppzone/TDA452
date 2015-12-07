@@ -237,9 +237,10 @@ readAndSolve fp = do
 
 -- Function that genereates all non blank cells in a sudoku
 nonBlanks :: Sudoku -> [(Pos, Maybe Int)]
-nonBlanks s = [(pos, (positionValue s pos)) | pos <- allPositions, isJust (positionValue s pos)]
+nonBlanks s = [(pos, val pos) | pos <- allPositions, isJust (val pos)]
   where
     r = rows s
+    val pos = positionValue s pos
 
 -- Function that given a position and a value, checks if
 -- the value in that cell is equal to the given value
