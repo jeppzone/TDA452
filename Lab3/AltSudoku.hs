@@ -172,7 +172,7 @@ prop_blanks sud = and[(rows sud !! x !! y) == Nothing | (x,y) <- blanks sud]
 (xs) !!= (n, x) | n < (length xs) = (take (n) xs) ++ [x] ++ (drop (n+1) xs)
                 | otherwise       = error ("list: index out of bounds")
 
- -- (xs) prop_!!= (n, x) =  
+ -- (xs) prop_!!= (n, x) =
 
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
 update sudoku (x, y) n = Sudoku $ upperRows ++ updatedRow:lowerRows
