@@ -149,9 +149,8 @@ prop_blanks s = all (\p -> isNothing $ positionValue s p) blanks'
 
 -- Operator that updates an element in a list given an index and a new value
 (!!=) :: [a] -> (Int, a) -> [a]
-(!!=) l (index, v) | (length l - 1) == index = take index l ++ [v]
-                   | otherwise = first ++ [v] ++ (tail $ second)
-  where (first, second) = splitAt index l
+(!!=) l (i, x) | i < (length l) = (take (i) l) ++ [x] ++ (drop (i+1) l)
+               | otherwise      = error ("!!= : index out of bounds")
 
 -- Property to check that the !!= operator behaves in a correct way,
 -- replacing the correct indexed element, not changing the length of the list
