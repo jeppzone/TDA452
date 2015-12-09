@@ -1,12 +1,14 @@
 module Expr where
 
-data Expr = Num Float
+data Expr = Num Double
         | Mul Expr Expr
         | Add Expr Expr
         | Sin Expr
         | Cos Expr
         | Var String
         deriving Eq
+
+-- type X = String
 
 instance Show Expr where
     show = showExpr
@@ -18,14 +20,14 @@ showExpr (Mul e1 e2)    = show e1 ++ " * " ++ show e2
 showExpr (Add e1 e2)    = show e1 ++ " + " ++ show e2
 showExpr (Sin e)        = "Sin " ++ "(" ++ show e ++ ")"
 showExpr (Cos e)        = "Cos " ++ "(" ++ show e ++ ")"
-showExpr (Var e)        = e
+showExpr (Var e)        = "x"
 
--- Cant be compiled yet. Needs to be converted to doubles
 
--- eval :: Expr -> Double -> Double
--- eval (Num n)        = n
--- eval (Mul e1 e2)    = (eval e1) * eval e2
--- eval (Add e1 e2)    = eval e1 + eval e2
--- eval (Sin e)        = eval sin e
--- eval (Cos e)        = eval cos e
--- eval (Var e)        = e
+
+eval :: Expr -> Double -> Double
+eval (Num n)       d    = n
+eval (Mul e1 e2)   d    = eval e1 d * eval e2 d
+eval (Add e1 e2)   d    = eval e1 d + eval e2 d
+eval (Sin e)       d    = sin (eval e d)
+eval (Cos e)       d    = cos (eval e d)
+eval (Var e)       d    = d
