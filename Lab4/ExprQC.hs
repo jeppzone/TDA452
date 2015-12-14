@@ -9,19 +9,13 @@ prop_ShowReadExpr e = closeToEqual e (fromJust(readExpr (showExpr e)))
 
 arbExpr :: Int -> Gen Expr
 arbExpr n | n == 1 = oneOf [number, variable]
-  where 
-    number = do
-                nbr <- choose(0.0, 100)
-                  return $ Num nbr
-    varaible = return Var
-           | otherwise = oneOf (number, bop, uop, variable)
-             where 
-              number
   
 rNumber :: Int -> Int ->Gen Num
 rNumber min max = do
                   nbr <- choose (min, max)
                   return Num nbr
+
+
 
 op :: Gen Op
 op = elements [Mul, Add]

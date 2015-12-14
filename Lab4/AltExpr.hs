@@ -114,8 +114,6 @@ simplify' exp@(Bop Add (Num n) e)
 simplify' exp@(Bop Add e (Num n))
        | n == 0    = simplify e
        | otherwise = exp
-simplify' exp@(Bop Add (Var) e) = (Bop Add (Num 0) (simplify e))
-simplify' exp@(Bop Add e (Var)) = (Bop Add (Num 0) (simplify e))
 simplify' (Bop Mul (Num n1) (Num n2)) = Num (n1*n2)
 simplify' exp@(Bop Mul (Num n) e)
        | n == 0    = Num 0
@@ -125,21 +123,20 @@ simplify' exp@(Bop Mul e (Num n))
        | n == 0    = Num 0
        | n == 1    = simplify e
        | otherwise = exp
-simplify' exp@(Bop Mul (Var) e) = (Bop Mul (Num 1) (simplify e))
-simplify' exp@(Bop Mul e (Var)) = (Bop Mul (Num 1) (simplify e))
+
 simplify' e = e
 
 
 differentiate :: Expr -> Expr
 differentiate (Num _) = Num 0.0
 differentiate (Var)   = Num 1.0
-differentiate (Bop Add e1 e2) = (Bop Add e1' e2')
+differentiate (Bop Add e1 e2) = simplify (Bop Add e1' e2')
   where e1' = differentiate e1
         e2' = differentiate e2
-differentiate (Bop Mul e1 e2) = (Bop Add (Bop Mul e1' e2) (Bop Mul e1 e2'))
+differentiate (Bop Mul e1 e2) = simplify (Bop Add (Bop Mul e1' e2) (Bop Mul e1 e2'))
   where e1' = differentiate e1
         e2' = differentiate e2
-differentiate (Uop Sin e) = (Bop Mul e' (Uop Cos e))
+differentiate (Uop Sin e) = simplify (Bop Mul e' (Uop Cos e))
   where e' = differentiate e
-differentiate (Uop Cos e) = (Bop Mul e' (Uop Cos (Bop Add e (Num pi))))
+differentiate (Uop Cos e) = simplify (Bop Mul e' (Bop Mul (Num (-1)) (Uop Cos e)))
   where e' = differentiate e
