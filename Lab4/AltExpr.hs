@@ -131,6 +131,7 @@ simplify (Bop o e1 e2) = simplify' (Bop o (simplify e1) (simplify e2))
 simplify (Uop f e) = simplify' (Uop f (simplify e))
 simplify e = e
 
+-- Helper function for simplifying an expression
 simplify' :: Expr -> Expr
 simplify' (Bop Add (Num n1) (Num n2)) = Num (n1 + n2)
 simplify' exp@(Bop Add (Num n) e)
