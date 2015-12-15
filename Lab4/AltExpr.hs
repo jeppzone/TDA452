@@ -1,7 +1,6 @@
 module AltExpr where
 
 import Parsing
-import Test.QuickCheck
 import Data.Char
 import Data.Maybe
 import Control.Monad
