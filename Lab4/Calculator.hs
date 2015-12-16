@@ -12,6 +12,8 @@ import AltExpr
 canWidth  = 300
 canHeight = 300
 
+-- Reads the text from the input field and draws the expression
+-- if it's valid
 readAndDraw :: Elem -> Canvas -> Double -> IO ()
 readAndDraw elem canvas sc = 
   do
@@ -26,6 +28,7 @@ readAndDraw elem canvas sc =
   where 
     ps exp = points (fromJust exp) sc (canWidth, canHeight)                   
 
+-- Helper function that reads the text from the input field
 readInput :: Elem -> IO (Maybe Expr)
 readInput elem = 
   do
@@ -34,6 +37,7 @@ readInput elem =
       then return $ readExpr $ fromJust string
     else return Nothing
 
+-- Function for differentiating the expression in the input field
 diffInput :: Elem -> IO()
 diffInput input = 
   do
@@ -41,6 +45,7 @@ diffInput input =
     let exp = fromJust $ readExpr string
     set input [prop "value" =: (showExpr $ differentiate exp)]
 
+-- Function for redrawing the picture when a zoom button has been pressed
 drawZoom :: Elem -> Elem -> Canvas -> Double -> IO()
 drawZoom input zoomLevel canvas amount =
   do
@@ -48,6 +53,7 @@ drawZoom input zoomLevel canvas amount =
     let newScale = abs (amount + (read (fromJust string)) :: Double)
     simpleDraw input zoomLevel canvas newScale
 
+-- Function that updates the zoomLevel and calls on the readAndDraw function
 simpleDraw :: Elem -> Elem -> Canvas -> Double -> IO()
 simpleDraw input zoomLevel canvas scale = 
   do
@@ -90,8 +96,10 @@ main = do
     focus input
     select input
     
+    -- constants
     let scale = 0.04
     let amount = 0.003
+    
     -- Interaction
     Just can <- fromElem canvas
     onEvent draw  Click  $ \_    -> simpleDraw input zoomLevel can scale
