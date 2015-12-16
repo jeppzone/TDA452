@@ -11,19 +11,19 @@ data Expr = Num Double
           | Bop Op Expr Expr
           | Uop Fun Expr
           | Var
-  deriving Eq
+  deriving (Eq, Show)
 
 -- Data type for operator with constructors for Addition and Multiplication
 data Op = Add | Mul 
-  deriving Eq
+  deriving (Eq, Show)
 
 -- Data type for function with constructors for sine and cosine
 data Fun = Sin | Cos
-  deriving Eq
+  deriving (Eq, Show)
 
 
-instance Show Expr where
-  show = showExpr
+--instance Show Expr where
+  --show = showExpr
 
 -- Function for converting an expression into a nicer looking string
 showExpr :: Expr -> String
@@ -133,7 +133,24 @@ simplify e = e
 
 -- Helper function for simplifying an expression
 simplify' :: Expr -> Expr
+
+-- Simplyfing for expressions contatining variables.
+-- There is much more that can be done, but due to time
+-- we won't do more than thos
 simplify' (Bop Add (Num n1) (Num n2)) = Num (n1 + n2)
+simplify' (Bop Add (Num n1) (Bop Add Var (Num n2))) = Bop Add Var (Num (n1 + n2))
+simplify' (Bop Add (Num n1) (Bop Add (Num n2) Var)) = Bop Add Var (Num (n1 + n2))
+simplify' (Bop Add (Bop Add Var (Num n1)) (Num n2)) = Bop Add Var (Num (n1 + n2))
+simplify' (Bop Add (Bop Add (Num n1) e) (Num n2))   = Bop Add (simplify e) (Num (n1 + n2))
+simplify' (Bop Add (Num n1) (Bop Add (Num n2) e))   = Bop Add (simplify e) (Num (n1 + n2))
+simplify' (Bop Mul (Bop Add Var (Num n1)) (Num n2)) = Bop Add (Bop Mul Var (Num (n1 * n2))) (Num (n1*n2))
+simplify' (Bop Mul (Bop Add (Num n1) Var) (Num n2)) = Bop Add (Bop Mul Var (Num (n1 * n2))) (Num (n1*n2))
+simplify' (Bop Mul (Num n1) (Bop Add Var (Num n2))) = Bop Add (Bop Mul Var (Num (n1 * n2))) (Num (n1*n2))
+simplify' (Bop Mul (Num n1) (Bop Add (Num n2) Var)) = Bop Add (Bop Mul Var (Num (n1 * n2))) (Num (n1*n2))
+simplify' (Bop Mul (Num n1) (Bop Mul (Num n2) Var)) = Bop Mul Var (Num (n1 * n2))
+simplify' (Bop Mul (Num n1) (Bop Mul Var (Num n2))) = Bop Mul Var (Num (n1 * n2))
+
+-- Simplyfing for expressions not containing variables
 simplify' exp@(Bop Add (Num n) e)
        | n == 0    = simplify e
        | otherwise = exp
@@ -165,5 +182,6 @@ differentiate (Bop Mul e1 e2) = simplify (Bop Add (Bop Mul e1' e2) (Bop Mul e1 e
         e2' = differentiate e2
 differentiate (Uop Sin e) = simplify (Bop Mul e' (Uop Cos e))
   where e' = differentiate e
-differentiate (Uop Cos e) = simplify (Bop Mul e' (Bop Mul (Num (-1)) (Uop Cos e)))
+differentiate (Uop Cos e) = simplify (Bop Mul e' (Bop Mul (Num (-1)) (Uop Sin e)))
   where e' = differentiate e
+

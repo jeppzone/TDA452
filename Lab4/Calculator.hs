@@ -9,8 +9,6 @@ import Data.Maybe
 import Pages
 import AltExpr
 
-
-
 canWidth  = 300
 canHeight = 300
 
@@ -19,10 +17,14 @@ readAndDraw elem canvas sc =
   do
     expr <- readInput elem
     if isJust expr
-      then render canvas (stroke (path (ps expr)))
+      then 
+        do
+          render canvas (stroke (path (ps expr)))
+          -- Set the text field to the simplified version of the input expression
+          set elem [prop "value" =: (showExpr $ simplify $ fromJust expr)]
     else error "Faulty expression"
-   where 
-     ps exp = points (fromJust exp) sc (canWidth, canHeight)                   
+  where 
+    ps exp = points (fromJust exp) sc (canWidth, canHeight)                   
 
 readInput :: Elem -> IO (Maybe Expr)
 readInput elem = 
