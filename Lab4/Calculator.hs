@@ -50,14 +50,19 @@ drawZoom :: Elem -> Elem -> Canvas -> Double -> IO()
 drawZoom input zoomLevel canvas amount =
   do
     string <- getValue zoomLevel
-    let newScale = abs (amount + (read (fromJust string)) :: Double)
-    simpleDraw input zoomLevel canvas newScale
+    let oldScale = read $ (fromJust string) :: Double
+    let newScale = amount + oldScale
+    if newScale < 0
+      then simpleDraw input zoomLevel canvas oldScale
+    else
+      simpleDraw input zoomLevel canvas newScale
+    
 
 -- Function that updates the zoomLevel and calls on the readAndDraw function
 simpleDraw :: Elem -> Elem -> Canvas -> Double -> IO()
 simpleDraw input zoomLevel canvas scale = 
   do
-    set zoomLevel [prop "value" =: (show scale)]
+    set zoomLevel [prop "value" =: (show (scale))]
     readAndDraw input canvas scale
 
 -- Calculates and creates all points in a function
@@ -80,14 +85,14 @@ main = do
     diff      <- mkButton "Differentiate"
     zoomIn    <- mkButton "Zoomz in"
     zoomOut   <- mkButton "Zoom out"
-    zoomLevel <- mkInput 0 "0.04"
+    zoomLevel <- mkInput 10 "0"
       -- The markup "<i>...</i>" means that the text inside should be rendered
       -- in italics.
 
     -- Layout
     formula <- mkDiv
     row formula [fx,input]
-    column documentBody [canvas,formula,draw, diff, zoomIn, zoomOut]
+    column documentBody [canvas,formula,draw, diff, zoomIn, zoomOut, zoomLevel]
  
     -- Styling
     setStyle documentBody "backgroundColor" "lightblue"
@@ -98,14 +103,14 @@ main = do
     
     -- constants
     let scale = 0.04
-    let amount = 0.003
-    
+    let amount = 0.01
+
     -- Interaction
     Just can <- fromElem canvas
     onEvent draw  Click  $ \_    -> simpleDraw input zoomLevel can scale
     onEvent input KeyUp  $ \code -> when (code==13) $ simpleDraw input zoomLevel can scale
     onEvent diff Click $ \_      -> diffInput input 
-    onEvent zoomIn Click $ \_    -> drawZoom input zoomLevel can (-amount)
+    onEvent zoomIn Click $ \_    -> drawZoom input zoomLevel can (-1*amount)
     onEvent zoomOut Click $ \_   -> drawZoom input zoomLevel can amount
       -- "Enter" key has code 13
 
