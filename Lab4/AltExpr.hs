@@ -124,33 +124,6 @@ removeSpaces (' ':xs) = removeSpaces xs
 removeSpaces (x:[]) = [x]
 removeSpaces (x:xs) = x : removeSpaces xs
 
--- Function that simplifies any given expression to the maximum extent.
--- At the moment, it does not simplify an expression containing a variable
-simplify :: Expr -> Expr
-simplify (Bop o e1 e2) = simplify' (Bop o (simplify e1) (simplify e2))
-simplify (Uop f e) = simplify' (Uop f (simplify e))
-simplify e = e
-
-simplify' :: Expr -> Expr
-simplify' (Bop Add (Num n1) (Num n2)) = Num (n1 + n2)
-simplify' exp@(Bop Add (Num n) e)
-       | n == 0    = simplify e
-       | otherwise = exp
-simplify' exp@(Bop Add e (Num n))
-       | n == 0    = simplify e
-       | otherwise = exp
-simplify' (Bop Mul (Num n1) (Num n2)) = Num (n1*n2)
-simplify' exp@(Bop Mul (Num n) e)
-       | n == 0    = Num 0
-       | n == 1    = simplify e
-       | otherwise = exp
-simplify' exp@(Bop Mul e (Num n))
-       | n == 0    = Num 0
-       | n == 1    = simplify e
-       | otherwise = exp
-
-simplify' e = e
-
 -- Function that calculates the derivative of any given expression
 -- and returns the resulting expression
 differentiate :: Expr -> Expr
@@ -164,5 +137,36 @@ differentiate (Bop Mul e1 e2) = simplify (Bop Add (Bop Mul e1' e2) (Bop Mul e1 e
         e2' = differentiate e2
 differentiate (Uop Sin e) = simplify (Bop Mul e' (Uop Cos e))
   where e' = differentiate e
-differentiate (Uop Cos e) = simplify (Bop Mul e' (Bop Mul (Num (-1)) (Uop Cos e)))
+differentiate (Uop Cos e) = simplify (Bop Mul e' (Bop Mul (Num (-1)) (Uop Sin e)))
   where e' = differentiate e
+
+-- Function that simplifies any given expression to the maximum extent.
+-- At the moment, it does not simplify an expression containing a variable
+simplify :: Expr -> Expr
+simplify (Bop o e1 e2) = simplify' (Bop o (simplify e1) (simplify e2))
+simplify (Uop f e) = simplify' (Uop f (simplify e))
+simplify e = e
+
+-- Helper function for simplifying an expression
+simplify' :: Expr -> Expr
+-- Simplyfing for expressions not containing variables
+simplify' (Bop Add (Num n1) (Num n2)) = Num (n1 + n2)
+simplify' exp@(Bop Add (Num n) e)
+       | n == 0.0    = simplify e
+       | otherwise   = exp
+simplify' exp@(Bop Add e (Num n))
+       | n == 0.0    = simplify e
+       | otherwise   = exp
+simplify' (Bop Mul (Num n1) (Num n2)) = Num (n1*n2)
+simplify' exp@(Bop Mul (Num n) e)
+       | n == 0.0    = Num 0
+       | n == 1.0    = simplify e
+       | otherwise   = exp
+simplify' exp@(Bop Mul e (Num n))
+       | n == 0.0    = Num 0
+       | n == 1.0    = simplify e
+       | otherwise   = exp
+simplify' e = e
+
+
+
