@@ -96,26 +96,19 @@ blocks :: Sudoku -> [Block]
 blocks s = rows' ++ columns' ++ blocks'
   where rows' = rows s
         columns' = transpose rows'
-        blocks'  = makeBlock rows'
+        blocks' = rowHelper rows'
 
--- -- Helper function for traversing the rows three at a time
--- rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
--- rowHelper [] = []
--- rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
---
--- -- Helper function that returns a list of blocks when given three rows
--- colHelper :: [[Maybe Int]] -> [[Maybe Int]]
--- colHelper (a:b:c:ds)
---   | null a = []
---   | otherwise = (take 3 a ++ take 3 b ++ take 3 c) :
---                 colHelper (drop 3 a : drop 3 b : drop 3 c : ds)
+-- Helper function for traversing the rows three at a time
+rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
+rowHelper [] = []
+rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
 
-makeBlock :: [[Maybe Int]] -> Block
-makeBlock rows = makeCols rows
-
-makeCols :: [[Maybe Int]] -> [[Maybe Int]]
-makeCols rows =
-
+-- Helper function that returns a list of blocks when given three rows
+colHelper :: [[Maybe Int]] -> [[Maybe Int]]
+colHelper (a:b:c:ds)
+  | null a = []
+  | otherwise = (take 3 a ++ take 3 b ++ take 3 c) :
+                colHelper (drop 3 a : drop 3 b : drop 3 c : ds)
 
 -- Checks if all blocks in a sudoku are valid
 isOkay:: Sudoku -> Bool

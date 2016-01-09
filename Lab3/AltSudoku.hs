@@ -123,27 +123,21 @@ countNothing :: [Maybe Int] -> Int
 countNothing arr = count [x == Nothing | x <- arr]
     where count list = sum $ map fromEnum list
 
--- Returns the rows, columns and blocks given a sudoku
 blocks :: Sudoku -> [Block]
 blocks s = rows' ++ columns' ++ blocks'
-  where rows' = rows s
-        columns' = transpose rows'
-        blocks' = rowHelper rows'
+    where rows' = rows s
+          columns' = transpose rows'
+          blocks' = makeCols rows'
 
--- Helper function for traversing the rows three at a time
-rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
-rowHelper [] = []
-rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
+makeCols :: [[Maybe Int]] -> [[Maybe Int]]
+makeCols rows =  makeRows (leftCol ++ midCol ++ rightCol)
+    where leftCol  = map (take 3) rows
+          midCol   = map (drop 3) (map (take 6) rows)
+          rightCol = map (drop 6) rows
 
--- Helper function that returns a list of blocks when given three rows
-colHelper :: [[Maybe Int]] -> [[Maybe Int]]
-colHelper (a:b:c:ds)
-  | null a = []
-  | otherwise = ((take 3 a) ++ (take 3 b) ++ (take 3 c)) :
-                colHelper ((drop 3 a) : (drop 3 b) : (drop 3 c) : ds)
-
-
-
+makeRows :: [[Maybe Int]] -> [[Maybe Int]]
+makeRows []   = []
+makeRows rows = (concat (take 3 rows)) : makeRows (drop 3 rows)
 
 isOkay :: Sudoku -> Bool
 isOkay sudo = all isOkayBlock (blocks sudo)
@@ -169,10 +163,12 @@ prop_blanks sud = and[(rows sud !! x !! y) == Nothing | (x,y) <- blanks sud]
 
 
 (!!=) :: [a] -> (Int, a) -> [a]
-(xs) !!= (n, x) | n < (length xs) = (take (n) xs) ++ [x] ++ (drop (n+1) xs)
-                | otherwise       = error ("list: index out of bounds")
+(!!=) xs (n, x)   | n < (length xs) = (take (n) xs) ++ [x] ++ (drop (n+1) xs)
+                  | otherwise       = error ("list: index out of bounds")
 
- -- (xs) prop_!!= (n, x) =
+prop_replace :: [a] -> (Int, a) -> Property
+prop_replace xs (n, x) = length xs > 0
+
 
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
 update sudoku (x, y) n = Sudoku $ upperRows ++ updatedRow:lowerRows
@@ -187,30 +183,3 @@ candidates :: Sudoku -> Pos -> [Int]
 candidates sudoku (x, y) = map (+1) (True `elemIndices`[isOkay (update sudoku (x,y) (Just n)) | n <- [1..9]])
 
 -- prop_candidates
-
-solve :: Sudoku -> Maybe Sudoku
-solve sud | not $ isOkay sud = Nothing
-          | otherwise        = solve' sud
-
-solve' :: Sudoku -> Maybe Sudoku
-solve' sud | isSolved sud = Just sud
-solve' sud
-
-
--- -- Helper function for traversing the rows three at a time
--- rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
--- rowHelper [] = []
--- rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
---
--- -- Helper function that returns a list of blocks when given three rows
--- colHelper :: [[Maybe Int]] -> [[Maybe Int]]
--- colHelper (a:b:c:ds)
---   | null a = []
---   | otherwise = (take 3 a ++ take 3 b ++ take 3 c) :
---                 colHelper (drop 3 a : drop 3 b : drop 3 c : ds)
-
-makeBlock :: [[Maybe Int]] -> Block
-makeBlock rows = makeCols rows
-
-makeCols :: [[Maybe Int]] -> [[Maybe Int]]
-makeCols rows =
