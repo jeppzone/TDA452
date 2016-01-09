@@ -22,12 +22,12 @@ isSudoku s = length (rows s) == 9 && all correctRow (rows s)
 correctRow :: [Maybe Int] -> Bool
 correctRow = all (\c -> case c of
                         Nothing -> True
-                        Just c -> c `elem` [1..9]) 
+                        Just c -> c `elem` [1..9])
 
 -- isSolved sud checks if sud is already solved, i.e. there are no blanks
 isSolved :: Sudoku -> Bool
 isSolved s = isSudoku s && all isRowSolved (rows s)
-  where 
+  where
     isRowSolved = all isJust
 
 ------------------------------------------ Part B ------------------------------------
@@ -53,7 +53,7 @@ readSudoku fp = do
                     then return sudoku
                   else error "Not a valid sudoku in file"
 
--- Helper function for parsing a sudoku                     
+-- Helper function for parsing a sudoku
 parseSudoku :: String -> Sudoku
 parseSudoku s = Sudoku (map parseRow (lines s))
 
@@ -105,7 +105,7 @@ rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
 
 -- Helper function that returns a list of blocks when given three rows
 colHelper :: [[Maybe Int]] -> [[Maybe Int]]
-colHelper (a:b:c:ds) 
+colHelper (a:b:c:ds)
   | null a = []
   | otherwise = (take 3 a ++ take 3 b ++ take 3 c) :
                 colHelper (drop 3 a : drop 3 b : drop 3 c : ds)
@@ -126,7 +126,7 @@ type Pos = (Int, Int)
 -- Function for returning all blank positions in the sudoku
 blanks :: Sudoku -> [Pos]
 blanks s = [pos | pos <- allPositions, isNothing (positionValue s pos)]
-  where 
+  where
     r = rows s
 
 -- Function that returns a list of all possible positions in a 9x9 sudoku
@@ -154,12 +154,12 @@ prop_blanks s = all (\p -> isNothing $ positionValue s p) blanks'
 
 -- Property to check that the !!= operator behaves in a correct way,
 -- replacing the correct indexed element, not changing the length of the list
--- and replacing with the correct element at the correct index  
+-- and replacing with the correct element at the correct index
 prop_replace :: Eq a => [a] -> (Int, a) -> Property
 prop_replace l (index, v) = length l > 0 &&
                             index >= 0 && index < length l ==>
-                            length l == length l1 && 
-                            index `elem` elemIndices v l1&& 
+                            length l == length l1 &&
+                            index `elem` elemIndices v l1&&
                             l1 !! index == v
   where
     l1 = l !!= (index, v)
@@ -192,10 +192,10 @@ candidates s (r, c) = [1..9] \\ [fromJust r | r <- (filter isJust list)]
 candidateHelper :: Pos -> Int
 candidateHelper (r, c) = (r * 3) + (c + 1)
 
--- Property for checking that the inserting the candidates doesn't 
+-- Property for checking that the inserting the candidates doesn't
 -- make the sudoku invalid
 prop_candidates :: Sudoku -> Property
-prop_candidates s = isSudoku s && isOkay s ==> 
+prop_candidates s = isSudoku s && isOkay s ==>
                     all(\sud -> isSudoku sud && isOkay sud) allSuds
   where
     allSuds  = concat [allSudsOneBlank b | b <- blanks s]
@@ -213,14 +213,14 @@ solve s | not (isSudoku s) || not (isOkay s) = Nothing
 solve' :: Sudoku -> [Pos] -> Maybe Sudoku
 solve' s [] = Just s
 solve' s (p:ps) = solveOne s p cs
-  where 
+  where
     cs = candidates s p
 
 -- Helper function for solving one particular cell
 solveOne :: Sudoku -> Pos -> [Int] -> Maybe Sudoku
 solveOne s p (c:cs) | isNothing s''  = solveOne s p cs
                     | otherwise      = s''
-  where 
+  where
     s'  = update s p (Just c)
     s'' = solve s'
 solveOne _ _ _                       = Nothing
@@ -250,12 +250,12 @@ hasValueCell s (p, v)  = cellValue == v
     cellValue = positionValue s p
 
 -- Function that given two sudokus checks if the first sudoku is valid and solved,
--- and checks if the first solution for the first is also a solution for the second.   
+-- and checks if the first solution for the first is also a solution for the second.
 isSolutionOf :: Sudoku -> Sudoku -> Bool
-isSolutionOf s u = isOkay s && isSolved s 
-                 && (all (hasValueCell s) (nonBlanks u)) 
+isSolutionOf s u = isOkay s && isSolved s
+                 && (all (hasValueCell s) (nonBlanks u))
 
--- Property that checks that every supposed solution produced by 
+-- Property that checks that every supposed solution produced by
 -- the solve function is actually a valid solution of the original problem
 prop_SolveSound :: Sudoku -> Property
 prop_SolveSound s = isJust solved ==>

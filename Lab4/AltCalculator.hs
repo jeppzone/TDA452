@@ -4,6 +4,7 @@ import Haste hiding (eval)
 import Haste.DOM
 import Haste.Events
 import Haste.Graphics.Canvas
+import Data.Maybe
 
 import Pages
 
