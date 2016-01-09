@@ -14,14 +14,23 @@ import AltExpr
 canWidth  = 300
 canHeight = 300
 
-readAndDraw :: Elem -> Canvas -> IO ()
-readAndDraw elm canv =
+readAndDraw :: Elem -> Canvas -> Double -> IO ()
+readAndDraw elm canv sc =
     do
-        expr <- readExpr elm
-        if expr /=Nothing then pnts = (points expr)
-        else pnts = Nothing
-        pic  <- stroke (path pnts)
-        return (render (canv pic))
+        expr <- readInput elm
+        if isJust expr
+            then draw $ points $ fromJust expr sc csize
+            else error
+    where
+        draw pnts = render canvas (stroke $ path pnts)
+        csize = (canHeight, canWidth)
+
+readInput :: Elem -> IO (Maybe Expr)
+readInput elm = do
+    str <- getValue elm
+    if isJust str
+        then return $ fromJust $ readExpr str
+        else return Nothing
 
 points :: Expr -> Double -> (Int,Int) -> [Point]
 points expr scale (width,height) =  fmap xCoord xs `zip` ys
