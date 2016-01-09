@@ -190,8 +190,27 @@ candidates sudoku (x, y) = map (+1) (True `elemIndices`[isOkay (update sudoku (x
 
 solve :: Sudoku -> Maybe Sudoku
 solve sud | not $ isOkay sud = Nothing
-          |                  = solve' sud
+          | otherwise        = solve' sud
 
 solve' :: Sudoku -> Maybe Sudoku
 solve' sud | isSolved sud = Just sud
 solve' sud
+
+
+-- -- Helper function for traversing the rows three at a time
+-- rowHelper :: [[Maybe Int]] -> [[Maybe Int]]
+-- rowHelper [] = []
+-- rowHelper r = colHelper(take 3 r) ++ rowHelper (drop 3 r)
+--
+-- -- Helper function that returns a list of blocks when given three rows
+-- colHelper :: [[Maybe Int]] -> [[Maybe Int]]
+-- colHelper (a:b:c:ds)
+--   | null a = []
+--   | otherwise = (take 3 a ++ take 3 b ++ take 3 c) :
+--                 colHelper (drop 3 a : drop 3 b : drop 3 c : ds)
+
+makeBlock :: [[Maybe Int]] -> Block
+makeBlock rows = makeCols rows
+
+makeCols :: [[Maybe Int]] -> [[Maybe Int]]
+makeCols rows =

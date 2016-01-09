@@ -4,6 +4,7 @@ import Haste hiding (eval)
 import Haste.DOM
 import Haste.Events
 import Haste.Graphics.Canvas
+import Data.Maybe
 
 import Pages
 
@@ -17,11 +18,18 @@ canHeight = 300
 readAndDraw :: Elem -> Canvas -> IO ()
 readAndDraw elm canv =
     do
-        expr <- readExpr elm
-        if expr /=Nothing then pnts = (points expr)
-        else pnts = Nothing
+        str <- getValue elm
+        do
+            if isJust $ readExpr str Nothing
+                then
+                    expr <- fromJust $ readExpr str
+                    else
+                        expr <- Nothing
+        let pnts = fromJust (points expr)
         pic  <- stroke (path pnts)
-        return (render (canv pic))
+        return (render pic canv)
+
+readElem e = readExpr
 
 points :: Expr -> Double -> (Int,Int) -> [Point]
 points expr scale (width,height) =  fmap xCoord xs `zip` ys
