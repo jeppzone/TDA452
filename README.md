@@ -1,1 +1,1 @@
-# TDA452
+# Exercises in Haskell
